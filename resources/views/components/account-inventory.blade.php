@@ -1,6 +1,13 @@
 <section aria-labelledby="control-panel-account-inventory">
     <h2 id="control-panel-account-inventory">Accounts</h2>
 
+    <p wire:loading role="status">Loading accounts…</p>
+
+    <label for="control-panel-account-search">Search accounts</label>
+    <input id="control-panel-account-search" type="search" wire:model.live.debounce.300ms="search" autocomplete="off">
+    <label for="control-panel-suspension-reason">Suspension reason</label>
+    <input id="control-panel-suspension-reason" type="text" wire:model="suspensionReason" maxlength="1000">
+
     @if ($accounts->isEmpty())
         <p>No accounts are available for the current team.</p>
     @else
@@ -11,6 +18,14 @@
                     <span>{{ $account->type->value }}</span>
                     <span>{{ $account->status->value }}</span>
                     <span>{{ count($account->quota_overrides ?? []) }} quota limits</span>
+                    @if ($account->status->value === 'active')
+                        <button type="button" wire:click="suspend('{{ $account->getKey() }}')" wire:loading.attr="disabled">Suspend</button>
+                    @elseif ($account->status->value === 'suspended')
+                        <button type="button" wire:click="activate('{{ $account->getKey() }}')" wire:loading.attr="disabled">Activate</button>
+                    @endif
+                    @if ($account->status->value !== 'archived')
+                        <button type="button" wire:click="archive('{{ $account->getKey() }}')" wire:loading.attr="disabled">Archive</button>
+                    @endif
                 </li>
             @endforeach
         </ul>
